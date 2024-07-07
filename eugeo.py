@@ -14,7 +14,6 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.output_parsers import StrOutputParser
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain.agents import initialize_agent, AgentType
-from langchain.callbacks import wandb_tracing_enabled
 
 from langchain_google_calendar_tools.utils import build_resource_service, get_oauth_credentials
 from langchain_google_calendar_tools.tools.create_new_event.tool import CreateNewEvent
@@ -32,6 +31,8 @@ from langchain.prompts.chat import (
     SystemMessagePromptTemplate,
     HumanMessagePromptTemplate,
 )
+import warnings
+warnings.filterwarnings("ignore")
 from langchain.chains import LLMChain
 import sys
 
@@ -249,7 +250,7 @@ def retrieve(state):
     Returns:
         state (dict): New key added to state, documents, that contains retrieved documents
     """
-    print("---RETRIEVE from Vector Store DB---")
+    #print("---RETRIEVE from Vector Store DB---")
     question = state["question"]
 
     # Retrieval
@@ -266,7 +267,7 @@ def generate(state):
     Returns:
         state (dict): New key added to state, generation, that contains LLM generation
     """
-    print("---GENERATE Answer---")
+    #print("---GENERATE Answer---")
     question = state["question"]
     documents = state["documents"]
     
@@ -286,7 +287,7 @@ def grade_documents(state):
         state (dict): Filtered out irrelevant documents and updated web_search state
     """
 
-    print("---CHECK DOCUMENT RELEVANCE TO QUESTION---")
+    #print("---CHECK DOCUMENT RELEVANCE TO QUESTION---")
     question = state["question"]
     documents = state["documents"]
     
@@ -298,11 +299,11 @@ def grade_documents(state):
         grade = score.binary_score
         # Document relevant
         if grade.lower() == "sim":
-            print("---GRADE: DOCUMENT RELEVANT---")
+            #print("---GRADE: DOCUMENT RELEVANT---")
             filtered_docs.append(d)
         # Document not relevant
         else:
-            print("---GRADE: DOCUMENT NOT RELEVANT---")
+            #print("---GRADE: DOCUMENT NOT RELEVANT---")
             # We do not include the document in filtered_docs
             # We set a flag to indicate that we want to run web search
             web_search = "Yes"
@@ -320,7 +321,7 @@ def web_search(state):
         state (dict): Appended web results to documents
     """
 
-    print("---WEB SEARCH. Append to vector store db---")
+    #print("---WEB SEARCH. Append to vector store db---")
     question = state["question"]
     documents = state["documents"]
 
@@ -344,20 +345,12 @@ def meeting(state):
     Returns:
         state (dict): New key added to state, generation, that contains LLM generation
     """
-    print("---SCHEDULE meeting---")
+    #print("---SCHEDULE meeting---")
     question = state["question"]
 
 
     generation = agent.run(question)
     return {"question": question, "generation": generation}
-
-def init(state):
-    print("---GENERATE Answer---")
-
-    
-    # RAG generation
-    generation = init_chain.invoke()
-    return {"generation": generation}
 
 ### Edges
 
@@ -372,17 +365,17 @@ def route_question(state):
         str: Next node to call
     """
 
-    print("---ROUTE QUESTION---")
+    #print("---ROUTE QUESTION---")
     question = state["question"]
     source = question_router.invoke({"question": question})   
     if source.datasource == 'websearch':
-        print("---ROUTE QUESTION TO WEB SEARCH---")
+        #print("---ROUTE QUESTION TO WEB SEARCH---")
         return "websearch"
     elif source.datasource == 'vectorstore':
-        print("---ROUTE QUESTION TO RAG---")
+        #print("---ROUTE QUESTION TO RAG---")
         return "vectorstore"
     elif source.datasource == 'agendamento':
-        print("---ROUTE QUESTION TO CALENDAR AGENT---")
+        #print("---ROUTE QUESTION TO CALENDAR AGENT---")
         return "agendamento"
 
 def decide_to_generate(state):
@@ -396,7 +389,7 @@ def decide_to_generate(state):
         str: Binary decision for next node to call
     """
 
-    print("---ASSESS GRADED DOCUMENTS---")
+    #print("---ASSESS GRADED DOCUMENTS---")
     question = state["question"]
     web_search = state["web_search"]
     filtered_documents = state["documents"]
@@ -404,11 +397,11 @@ def decide_to_generate(state):
     if web_search == "Yes":
         # All documents have been filtered check_relevance
         # We will re-generate a new query
-        print("---DECISION: ALL DOCUMENTS ARE NOT RELEVANT TO QUESTION, INCLUDE WEB SEARCH---")
+        #print("---DECISION: ALL DOCUMENTS ARE NOT RELEVANT TO QUESTION, INCLUDE WEB SEARCH---")
         return "websearch"
     else:
         # We have relevant documents, so generate answer
-        print("---DECISION: GENERATE---")
+        #print("---DECISION: GENERATE---")
         return "generate"
 
 def grade_generation_v_documents_and_question(state):
@@ -422,7 +415,7 @@ def grade_generation_v_documents_and_question(state):
         str: Decision for next node to call
     """
 
-    print("---CHECK HALLUCINATIONS---")
+    #print("---CHECK HALLUCINATIONS---")
     question = state["question"]
     documents = state["documents"]
     generation = state["generation"]
@@ -432,20 +425,21 @@ def grade_generation_v_documents_and_question(state):
 
     # Check hallucination
     if grade == "sim":
-        print("---DECISION: GENERATION IS GROUNDED IN DOCUMENTS---")
+        #print("---DECISION: GENERATION IS GROUNDED IN DOCUMENTS---")
         # Check question-answering
-        print("---GRADE GENERATION vs QUESTION---")
+        #print("---GRADE GENERATION vs QUESTION---")
         score = answer_grader.invoke({"question": question,"generation": generation})
         grade = score.binary_score
         if grade == "sim":
-            print("---DECISION: GENERATION ADDRESSES QUESTION---")
+            #print("---DECISION: GENERATION ADDRESSES QUESTION---")
             return "useful"
         else:
-            print("---DECISION: GENERATION DOES NOT ADDRESS QUESTION---")
+            #print("---DECISION: GENERATION DOES NOT ADDRESS QUESTION---")
             return "not useful"
     else:
-        pprint("---DECISION: GENERATION IS NOT GROUNDED IN DOCUMENTS, RE-TRY---")
+        #pprint("---DECISION: GENERATION IS NOT GROUNDED IN DOCUMENTS, RE-TRY---")
         return "not supported"
+
     
 workflow = StateGraph(GraphState)
 
@@ -455,17 +449,16 @@ workflow.add_node("retrieve", retrieve) # retrieve
 workflow.add_node("grade_documents", grade_documents) # grade documents
 workflow.add_node("generate", generate) # generate
 workflow.add_node("meeting", meeting) # meeting
-workflow.add_node("init", init) # meeting
 
 workflow.add_edge("websearch", "generate") #start -> end of node
 workflow.add_edge("retrieve", "grade_documents")
-workflow.add_edge("meeting", "init")
+workflow.add_edge("meeting", END)
+workflow.add_edge("generate", END)
+
+
 
 # Build graph
-workflow.set_entry_point("init")
-
-workflow.add_conditional_edges(
-    "init", # start: node
+workflow.set_conditional_entry_point(
     route_question,
     {
         "websearch": "websearch",
@@ -482,18 +475,26 @@ workflow.add_conditional_edges(
         "generate": "generate",   #returns of the function
     },
 )
-workflow.add_conditional_edges(
+#RETIREI GRADE GENERATION PQ TEMPO ERA MUITO LONGO
+""" workflow.add_conditional_edges(
     "generate", # start: node
     grade_generation_v_documents_and_question, # defined function
     {
         "not supported": "generate", #returns of the function
-        "useful": "init",               #returns of the function
+        "useful": END,               #returns of the function
         "not useful": "websearch",   #returns of the function
     },
-)
+) """
 
-# Compile
 app = workflow.compile()
+
+def analyzer(user_input):
+    global var
+    resp = verify_context(user_input)
+    if(resp == "sim"):
+        return
+    else:
+        var = 1984
 
 def verify_context(user_input):
     chat = ChatGroq(
@@ -522,9 +523,11 @@ def verify_context(user_input):
 
     chain = chat_prompt | chat
     
-    response = chain.run(input=user_input)
-    response = response.replace("\n", "")
-    return response
+    response = chain.invoke(input=user_input)
+    #print(response.content.lower())
+    return response.content.lower()
+
+
 
 #classe principal do atendimento
 class eugeo_service:
@@ -576,7 +579,8 @@ class eugeo_service:
         template =  """
         Você é um assistente que trabalha na empresa tech4.ai, seu nome é Eugeo. 
         Sua função é realizar o atendimento de um novo funcionário da empresa seguindo esta orientação:{orientacao}
-        para tomar a ação. Leve também em consideração o histórico da conversa abaixo após o símbolo
+        para tomar a ação.Não é necessáriamente o primeiro dia de trabalho do funcionário.
+        Leve também em consideração o histórico da conversa abaixo após o símbolo
         '===' até o próximo símbolo'==='.
         ===
         {historico}.
@@ -591,12 +595,12 @@ class eugeo_service:
         chat_prompt = ChatPromptTemplate.from_messages(
             [system_message_prompt, human_message_prompt]
         )
+        
+        chain = chat_prompt | chat
 
-        chain = LLMChain(llm=chat, prompt=chat_prompt)
-
-        response = chain.run(input=user_input,historico = self.history,orientacao=self.orientacao)
-        response = response.replace("\n", "")
-        return response
+        response = chain.invoke({"input":user_input, "historico": self.history, "orientacao": self.orientacao})
+        return response.content
+    
     #guarda input do usuário no histórico
     def human_step(self,human_input):
         human_input = human_input + '<FIM_TURNO_CLIENTE>'
@@ -607,7 +611,7 @@ class eugeo_service:
         orientacao = " verifique através da fala {input} se o usuário quer sair do atendimento, se sim retorne apenas 'sim' se não retone apenas 'não'"
         eugeo_output = self.atendimento(user_input,orientacao)
         if eugeo_output =="sim":
-            orientacao = " dispeça e deseje ao funcionário um bom dia. Não diga mais nada além disso!"
+            orientacao = "apenas se dispeça dele. Não diga mais nada além disso!"
             eugeo_output = self.atendimento(user_input,orientacao)
             print("\n Eugeo turn =>",eugeo_output)
             sys.exit()
@@ -622,7 +626,7 @@ def flow(user_input):
     inputs = {"question": user_input}
     for output in app.stream(inputs):
         for key, value in output.items():
-            pprint(f"Finished running: {key}:")
+            pprint("")
     return value["generation"]
 
 def main():
@@ -637,6 +641,9 @@ while True:
     #intrdução do atendimento     
     if var == 0:
         orientacao = "Apresente-se e pergunte como pode ajudar o novo funcionário"
+    elif var == 1984:
+        orientacao = "Diga que não entendeu, e peça mais detalhes"
+        var = 0
     #retorno
     else:
         orientacao = "pergunte se pode ajudar o usuário em mais alguma coisa?"
@@ -654,22 +661,28 @@ while True:
         eugeo_output = eugeo.atendimento(user_input,orientacao)
         eugeo.eugeo_step(eugeo_output)
         if eugeo_output == "não":
-            orientacao = "dispeça e deseje ao funcionário um bom dia. Não diga mais nada além disso!"
+            orientacao = "apenas se dispeça dele. Não diga mais nada além disso!"
             eugeo_output = eugeo.atendimento(user_input,orientacao)
             print("\n Eugeo turn =>",eugeo_output) 
             break
     if flag == False:
         eugeo.exit(user_input)
     flag = False
+    analyzer(user_input)
 
-    #ATENDIMENTO
-    orientacao = "responda ao {input} pedindo para o cliente aguardar enquanto você faz o que ele pediu "
-    eugeo.human_step(user_input)
-    eugeo_output = eugeo.atendimento(user_input,orientacao)
+    if(var!=1984):
+        #ATENDIMENTO
+        orientacao = "responda ao {input} pedindo para o cliente aguardar enquanto você faz o que ele pediu "
+        eugeo.human_step(user_input)
+        eugeo_output = eugeo.atendimento(user_input ,orientacao)
+        print("\n Eugeo turn =>",eugeo_output) 
 
-    eugeo_output = retorno = flow(user_input)   
-    print("\n Eugeo turn =>", eugeo_output)
+        retorno = flow(user_input)   
+        orientacao = "{input} é o resultado do que foi pedido pelo usuário. Formate uma resposta"
+        eugeo_output = eugeo.atendimento(retorno , orientacao)
+        print("\n Eugeo turn =>",eugeo_output) 
 
-    eugeo.eugeo_step(eugeo_output)
-    var += 1              
+        eugeo.eugeo_step(eugeo_output)
+        var += 1           
         
+main()
