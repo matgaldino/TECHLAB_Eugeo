@@ -76,5 +76,5 @@ browser_path = "/usr/bin/firefox"
 webbrowser.register('firefox', None, webbrowser.BackgroundBrowser(browser_path))
 # ----------------------------------------------------------------------------------------------
 ```
-- É necessário realizar o login com uma conta do google para realizer os agendamentos de reunião
+- É necessário realizar o login com uma conta do google para realizar os agendamentos de reunião
 - O agente utilizado não tem o contexto da data ou hora atual. Para realizar o agendamento deve ser informada a data com dia mês e ano. Erros de data e horário devem ocorrer pois o agente não está com o fuso horário brasileiro.
