@@ -1,5 +1,80 @@
 # TECHLAB_Eugeo
-Repositório para o desafio de IAG do Techlab
-# System dependencies
-# Please install Tesseract OCR separately.
-# On Ubuntu: sudo apt-get install tesseract-ocr
+
+Repositório destinado ao desafio de IAG do TechLab
+
+## Objetivo
+Desenvolver um agente conversacional que facilite a integração de novos funcionários na Tech4ai, ajudando-os a se familiarizar rapidamente com a cultura, políticas, programas e ferramentas de trabalho da empresa.
+
+## Tecnologias utilizaddas
+- Groq API
+- Python
+- Hugging Face
+- Langchain
+  
+## Installação
+
+#### 1. Clone the repository
+
+```bash
+git clone https://github.com/matgaldino/TECHLAB_Eugeo.git
+```
+
+#### 2. Criando ambiente Python
+
+Python 3.10 ou acima usando `venv` :
+
+``` bash
+cd TECHLAB
+python3 -m venv env
+source env/bin/activate
+```
+#### 3. Intallando as dependências
+``` bash
+pip install -r requirements.txt
+```
+
+#### 4. Set up the keys in a .env file
+
+Crie `.env` no diretório principal do projeto. Dentro do arquivo, adcione sua OpenAI API key:
+
+```makefile
+GROQ_API_KEY="your_api_key_here"
+TAVILY_API_KEY="your_api_key_here"
+```
+### 5. configurando arquivo JSON google cloud
+Vá para google cloud console :https://console.cloud.google.com/
+selecione seu projeto, vá para:
+"APIs & Services" > "Credentials".
+clique em  "Create credentials" e selecione "Service Account Key".
+preencha as informações necessárias e crie a chave no formato JSON.
+
+tenha certeza que ela contém os campos necessários:
+client_id, project_id, auth_uri, token_uri, auth_provider_x509_cert_url, client_secret, redirect_uris.
+
+Em seu código, verifique se você está fornecendo o caminho correto para o arquivo de chave JSON.  O caminho deve ser absoluto ou relativo ao local do script.  Verifique novamente o caminho para se certificar de que é preciso.
+por exemplo:
+```python
+credentials = get_oauth_credentials(
+    client_secrets_file="credentials.json",
+)
+```
+Depois de confirmar que seu arquivo de chave JSON tem os campos obrigatórios e o caminho está correto, tente executar o código novamente usando a chave JSON válida.
+
+## Rodando
+No seu terminal rode o código principal:
+```python
+python3 eugeo.py
+```
+
+### Observações
+- Se atente ao seguinte trecho de código pois o desenvolvimento do projeto foi em wsl, caso necessário comente o trecho a seguir:
+```python
+# ------------------------ NECESSÁRIO POIS DESENVOLVI UTILIZANDO WSL --------------------------
+import webbrowser
+
+browser_path = "/usr/bin/firefox"
+webbrowser.register('firefox', None, webbrowser.BackgroundBrowser(browser_path))
+# ----------------------------------------------------------------------------------------------
+```
+- É necessário realizar o login com uma conta do google para realizer os agendamentos de reunião
+- O agente utilizado não tem o contexto da data ou hora atual. Para realizar o agendamento deve ser informada a data com dia mês e ano. Erros de data e horário devem ocorrer pois o agente não está com o fuso horário brasileiro.
