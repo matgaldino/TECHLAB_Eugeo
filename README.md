@@ -47,7 +47,7 @@ TAVILY_API_KEY="your_api_key_here"
 Vá para google cloud console :https://console.cloud.google.com/
 selecione seu projeto, vá para:
 "APIs & Services" > "Credentials".
-clique em  "Create credentials" e selecione "Service Account Key".
+clique em  "Create credentials" e selecione "ID do cliente OAuth".
 preencha as informações necessárias e crie a chave no formato JSON.
 
 tenha certeza que ela contém os campos necessários:
