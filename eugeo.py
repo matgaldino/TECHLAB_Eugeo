@@ -35,6 +35,7 @@ import warnings
 warnings.filterwarnings("ignore")
 from langchain.chains import LLMChain
 import sys
+from datetime import datetime
 
 
 load_dotenv()
@@ -348,8 +349,10 @@ def meeting(state):
     #print("---SCHEDULE meeting---")
     question = state["question"]
 
-    atual = agent.run("Qual o dia e a hora atual?")
-    generation = agent.run(question+" "+atual)
+    atual = str(datetime.today().strftime("%d de %B de %Y"))
+    # atual = agent.run("Qual o dia e a hora atual?")
+    generation = agent.run(question+". Hoje é dia:"+atual)
+    
     return {"question": question, "generation": generation}
 
 ### Edges
