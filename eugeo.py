@@ -674,7 +674,7 @@ while True:
         print("\n Eugeo turn =>",eugeo_output) 
 
         retorno = flow(user_input)   
-        orientacao = "Sua busca por informações resultou no seguinte: {input}. Tudo o que você precisa fazer é passar essas informaçoes ao usuário. Apenas isso. Não responda o agente que te enviou as informações."
+        orientacao = "Sua busca por informações resultou no seguinte: {input}. Tudo o que você precisa fazer é passar essas informaçoes ao usuário. Apenas isso. Não responda o agente que te enviou as informações. Fale sempre em pt-BR"
         eugeo_output = eugeo.atendimento(retorno , orientacao)
         print("\n Eugeo turn =>",eugeo_output) 
 
