@@ -82,3 +82,4 @@ webbrowser.register('firefox', None, webbrowser.BackgroundBrowser(browser_path))
 - Erros de data e horário ocorrem pois o agente não está com o fuso horário brasileiro. Está com o fuso horário GMT+7, ou seja, tem uma diferença de 10h com o fuso brasileiro.
 - As inferências que utilizam RAG podem demorar alguns minutos para retornar.
 - Foi verificado que às vezes a função de agendar a reunião da o seguinte erro 'datetime.timezone' object has no attribute 'zone'. Rodar novamente geralmente resolve o erro.
+- Nem todos os nós do LangGraphg foram utilizados pois o tempo estava muito alto.
