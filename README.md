@@ -18,7 +18,7 @@ Desenvolver um agente conversacional que facilite a integração de novos funcio
 #### 1. Clone the repository
 
 ```bash
-git clone https://github.com/matgaldino/TECHLAB_Eugeo.git
+git clone git@github.com:matgaldino/TECHLAB_Eugeo.git
 ```
 
 #### 2. Criando ambiente Python

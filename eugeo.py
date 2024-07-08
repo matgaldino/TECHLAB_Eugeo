@@ -103,7 +103,7 @@ loader = PyPDFLoader(pdf_path)
 docs = loader.load()
 
 # Split the combined documents into chunks
-text_splitter = CharacterTextSplitter(chunk_size=100, chunk_overlap=0)
+text_splitter = CharacterTextSplitter(chunk_size=300, chunk_overlap=0)
 doc_splits = text_splitter.split_documents(docs)
 
 """ 
@@ -603,7 +603,7 @@ class eugeo_service:
     def exit(self,user_input):
         orientacao = " verifique através da fala {input} se o usuário quer sair do atendimento, se sim retorne apenas 'sim' se não retone apenas 'não'"
         eugeo_output = self.atendimento(user_input,orientacao)
-        if eugeo_output =="sim":
+        if eugeo_output == ("sim" or "Sim" or  "sim." or "Sim."):
             orientacao = "se dispeça do usuário. não é necessário dizer nada além disso"
             eugeo_output = self.atendimento(user_input,orientacao)
             print("\n Eugeo turn =>",eugeo_output)
@@ -653,7 +653,7 @@ while True:
         orientacao = "Voce perguntou se o usuario quer mais ajuda.verifique se na resposta dele:{input} ele quer mais ajuda ou não.Se sim diga apenas 'sim'. Se não diga apenas 'não'"
         eugeo_output = eugeo.atendimento(user_input,orientacao)
         eugeo.eugeo_step(eugeo_output)
-        if eugeo_output == "não":
+        if eugeo_output == ("não" or "nao" or "Não" or "Nao" or "não." or "nao." or "Não." or "Nao."):
             orientacao = "se dispeça do usuário. não é necessário dizer nada além disso"
             eugeo_output = eugeo.atendimento(user_input,orientacao)
             print("\n Eugeo turn =>",eugeo_output) 
