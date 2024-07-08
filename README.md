@@ -77,4 +77,7 @@ webbrowser.register('firefox', None, webbrowser.BackgroundBrowser(browser_path))
 # ----------------------------------------------------------------------------------------------
 ```
 - É necessário realizar o login com uma conta do google para realizar os agendamentos de reunião
-- O agente utilizado não tem o contexto da data ou hora atual. Para realizar o agendamento deve ser informada a data com dia mês e ano. Erros de data e horário devem ocorrer pois o agente não está com o fuso horário brasileiro.
+- Erros de data e horário ocorrem pois o agente não está com o fuso horário brasileiro. Está com o fuso horário GMT+7, ou seja, tem uma diferença de 10h com o fuso brasileiro.
+- Ao adicionar um email ao pedido de agendamento a reunião será marcada entre o email enviado e a conta logada anteriormente.
+- As inferências que utilizam RAG podem demorar alguns minutos para retornar.
+- Foi verificado que às vezes a função de agendar a reunião da erro.

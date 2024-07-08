@@ -62,7 +62,7 @@ agent = initialize_agent(
     ],
     llm = ChatGroq(temperature=0, model="llama3-70b-8192"),
     agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
-    verbose=True,
+    verbose=False,
 )
 
 # Data model
@@ -348,8 +348,8 @@ def meeting(state):
     #print("---SCHEDULE meeting---")
     question = state["question"]
 
-
-    generation = agent.run(question)
+    atual = agent.run("Qual o dia e a hora atual?")
+    generation = agent.run(question+" "+atual)
     return {"question": question, "generation": generation}
 
 ### Edges
@@ -452,6 +452,7 @@ workflow.add_node("meeting", meeting) # meeting
 
 workflow.add_edge("websearch", "generate") #start -> end of node
 workflow.add_edge("retrieve", "grade_documents")
+workflow.add_edge("grade_documents", "generate")
 workflow.add_edge("meeting", END)
 workflow.add_edge("generate", END)
 
@@ -467,14 +468,6 @@ workflow.set_conditional_entry_point(
     },
 )
  
-workflow.add_conditional_edges(
-    "grade_documents", # start: node
-    decide_to_generate, # defined function
-    {
-        "websearch": "websearch", #returns of the function
-        "generate": "generate",   #returns of the function
-    },
-)
 #RETIREI GRADE GENERATION PQ TEMPO ERA MUITO LONGO
 """ workflow.add_conditional_edges(
     "generate", # start: node
@@ -587,7 +580,7 @@ class eugeo_service:
         ===
         não diga olá nas frases depois da apresentação. 
         Não é necessário que se apresente de novo e nem mesmo cumprimente o usuário a cada ação.
-        
+        Nunca escreva '<FIM_TURNO_CLIENTE>' ou '<FIM_TURNO_ATENDENTE>' nas frases.
         """
         system_message_prompt = SystemMessagePromptTemplate.from_template(template)
 
@@ -611,7 +604,7 @@ class eugeo_service:
         orientacao = " verifique através da fala {input} se o usuário quer sair do atendimento, se sim retorne apenas 'sim' se não retone apenas 'não'"
         eugeo_output = self.atendimento(user_input,orientacao)
         if eugeo_output =="sim":
-            orientacao = "apenas se dispeça dele. Não diga mais nada além disso!"
+            orientacao = "se dispeça do usuário. não é necessário dizer nada além disso"
             eugeo_output = self.atendimento(user_input,orientacao)
             print("\n Eugeo turn =>",eugeo_output)
             sys.exit()
@@ -657,11 +650,11 @@ while True:
     user_input = input("\nUser Input  => ")
     
     if var!=0:
-        orientacao = "Voce perguntou se o usuario quer mais ajuda.verifique se a resposta dele:{input} ele quer mais ajuda ou não.Se sim diga apenas sim. Se não diga apenas não"
+        orientacao = "Voce perguntou se o usuario quer mais ajuda.verifique se na resposta dele:{input} ele quer mais ajuda ou não.Se sim diga apenas 'sim'. Se não diga apenas 'não'"
         eugeo_output = eugeo.atendimento(user_input,orientacao)
         eugeo.eugeo_step(eugeo_output)
         if eugeo_output == "não":
-            orientacao = "apenas se dispeça dele. Não diga mais nada além disso!"
+            orientacao = "se dispeça do usuário. não é necessário dizer nada além disso"
             eugeo_output = eugeo.atendimento(user_input,orientacao)
             print("\n Eugeo turn =>",eugeo_output) 
             break
@@ -678,7 +671,7 @@ while True:
         print("\n Eugeo turn =>",eugeo_output) 
 
         retorno = flow(user_input)   
-        orientacao = "{input} é o resultado do que foi pedido pelo usuário. Formate uma resposta"
+        orientacao = "Sua busca por informações resultou no seguinte: {input}. Tudo o que você precisa fazer é passar essas informaçoes ao usuário. Apenas isso. Não responda o agente que te enviou as informações."
         eugeo_output = eugeo.atendimento(retorno , orientacao)
         print("\n Eugeo turn =>",eugeo_output) 
 
