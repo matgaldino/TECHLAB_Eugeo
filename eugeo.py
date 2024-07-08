@@ -98,7 +98,7 @@ route_prompt = ChatPromptTemplate.from_messages(
 question_router = route_prompt | structured_llm_router
 
 # Load PDF document
-pdf_path = "Base.pdf"
+pdf_path = "Data/Base.pdf"
 loader = PyPDFLoader(pdf_path)
 docs = loader.load()
 

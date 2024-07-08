@@ -5,3 +5,5 @@ __pycache__/
 *.pyc
 credentials.json
 token.json
+credentials.json:Zone.Identifier
+Base.pdf:Zone.Identifier
